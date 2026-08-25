@@ -1,9 +1,7 @@
 from flask import Flask, request
-
-from database import get_db_connection
 from database import get_db_connection
 from schemas import TaskCreate, TaskUpdate
-
+from pydantic import ValidationError
 
 app = Flask(__name__)
 
@@ -45,8 +43,9 @@ def create_task():
     data = request.get_json()
     try:
         task = TaskCreate.model_validate(data)
-    except Exception as e:
-        return {"error": str(e)}, 400
+    except ValidationError as e:
+        return {"error": "Invalid task data",
+                "details": e.errors()}, 400
 
     connection = get_db_connection()
 
@@ -73,8 +72,9 @@ def update_task(task_id):
     data = request.get_json()
     try:
         task_update = TaskUpdate.model_validate(data)
-    except Exception as e:
-        return {"error": str(e)}, 400
+    except ValidationError as e:
+        return {"error": "Invalid task data",
+                "details": e.errors()}, 400
 
     connection = get_db_connection()
 
