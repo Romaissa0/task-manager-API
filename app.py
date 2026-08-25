@@ -2,6 +2,9 @@ from flask import Flask, request
 
 from database import get_db_connection
 from database import get_db_connection
+from schemas import TaskCreate, TaskUpdate
+
+
 app = Flask(__name__)
 
 
@@ -40,12 +43,16 @@ def get_task(task_id):
 @app.route("/tasks", methods=["POST"])
 def create_task():
     data = request.get_json()
+    try:
+        task = TaskCreate.model_validate(data)
+    except Exception as e:
+        return {"error": str(e)}, 400
 
     connection = get_db_connection()
 
     cursor = connection.execute(
         "INSERT INTO tasks (title, description) VALUES (?, ?)",
-        (data["title"], data.get("description"))
+        (task.title, task.description)
     )
 
     connection.commit()
@@ -64,6 +71,10 @@ def create_task():
 @app.route("/tasks/<int:task_id>", methods=["PUT"])
 def update_task(task_id):
     data = request.get_json()
+    try:
+        task_update = TaskUpdate.model_validate(data)
+    except Exception as e:
+        return {"error": str(e)}, 400
 
     connection = get_db_connection()
 
@@ -83,9 +94,9 @@ def update_task(task_id):
         WHERE id = ?
         """,
         (
-            data["title"],
-            data.get("description"),
-            data.get("completed", False),
+            task_update.title,
+            task_update.description,
+            task_update.completed,
             task_id
         )
     )
