@@ -23,19 +23,10 @@ def create_task():
             "error": "Invalid task data",
             "details": e.errors()
         }, 400
-
-    connection = get_db_connection()
-
-    cursor = connection.execute(
-        "INSERT INTO tasks (title, description) VALUES (?, ?)",
-        (task.title, task.description)
+    task_id = create_task(
+        task.title,
+        task.description
     )
-
-    connection.commit()
-
-    task_id = cursor.lastrowid
-
-    connection.close()
 
     return {
         "message": "Task created",

@@ -18,29 +18,6 @@ def get_tasks():
     return {"tasks": tasks}
 
 
-def create_task():
-    data = request.get_json()
-
-    try:
-        task = TaskCreate.model_validate(data)
-    except ValidationError as e:
-        return {
-            "error": "Invalid task data",
-            "details": e.errors()
-        }, 400
-
-    connection = get_db_connection()
-
-    cursor = connection.execute(
-        "INSERT INTO tasks (title, description) VALUES (?, ?)",
-        (task.title, task.description)
-    )
-
-    connection.commit()
-
-    task_id = cursor.lastrowid
-
-    connection.close()
 
 
 def get_task_by_id(task_id):
@@ -57,3 +34,20 @@ def get_task_by_id(task_id):
         return None
 
     return dict(task)
+
+
+def create_task(title, description):
+    connection = get_db_connection()
+
+    cursor = connection.execute(
+        "INSERT INTO tasks (title, description) VALUES (?, ?)",
+        (title, description)
+    )
+
+    connection.commit()
+
+    task_id = cursor.lastrowid
+
+    connection.close()
+
+    return task_id
