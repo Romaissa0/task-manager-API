@@ -1,8 +1,7 @@
 from flask import Blueprint, request
-from database import get_db_connection
 from pydantic import ValidationError
 from schemas import TaskCreate, TaskUpdate, TaskPatch
-from services.task_service import get_all_tasks, get_task_by_id
+from services.task_service import get_all_tasks, get_task_by_id , create_task, update_task, patch_task, delete_task
 
 tasks_bp = Blueprint("tasks", __name__)
 
@@ -13,7 +12,7 @@ def get_tasks():
     return {"tasks": tasks}
 
 @tasks_bp.route("/tasks", methods=["POST"])
-def create_task():
+def create_task_route():
     data = request.get_json()
 
     try:
@@ -40,11 +39,11 @@ def get_task(task_id):
     if task is None:
         return {"error": "Task not found"}, 404
 
-    return {"task": dict(task)}
+    return {"task":task}
 
 
 @tasks_bp.route("/tasks/<int:task_id>", methods=["PUT"])
-def update_task(task_id):
+def update_task_route(task_id):
     data = request.get_json()
     try:
         task_update = TaskUpdate.model_validate(data)
@@ -52,33 +51,12 @@ def update_task(task_id):
         return {"error": "Invalid task data",
                 "details": e.errors()}, 400
 
-    connection = get_db_connection()
-
-    task = connection.execute(
-        "SELECT * FROM tasks WHERE id = ?",
-        (task_id,)
-    ).fetchone()
+    task = get_task_by_id(task_id)
 
     if task is None:
-        connection.close()
         return {"error": "Task not found"}, 404
 
-    connection.execute(
-        """
-        UPDATE tasks
-        SET title = ?, description = ?, completed = ?
-        WHERE id = ?
-        """,
-        (
-            task_update.title,
-            task_update.description,
-            task_update.completed,
-            task_id
-        )
-    )
-
-    connection.commit()
-    connection.close()
+    update_task(task_id, task_update.title, task_update.description, task_update.completed)
 
     return {
         "message": "Task updated"
@@ -88,7 +66,7 @@ def update_task(task_id):
 
 
 @tasks_bp.route("/tasks/<int:task_id>", methods=["PATCH"])
-def patch_task(task_id):
+def patch_task_route(task_id):
     data = request.get_json()
 
     try:
@@ -99,54 +77,27 @@ def patch_task(task_id):
             "details": e.errors()
         }, 400
 
-    connection = get_db_connection()
-
-    task = connection.execute(
-        "SELECT * FROM tasks WHERE id = ?",
-        (task_id,)
-    ).fetchone()
+    task = get_task_by_id(task_id)
 
     if task is None:
-        connection.close()
         return {"error": "Task not found"}, 404
 
     updates = task_data.model_dump(exclude_unset=True)
 
-    if not updates:
-        connection.close()
-        return {"error": "No fields to update"}, 400
+    patch_task(task_id, updates)
 
-    for field, value in updates.items():
-        connection.execute(
-            f"UPDATE tasks SET {field} = ? WHERE id = ?",
-            (value, task_id)
-        )
-
-    connection.commit()
-    connection.close()
-
-    return {"message": "Task partially updated"}
+    return {
+        "message": "Task updated"
+    }
 
 
 @tasks_bp.route("/tasks/<int:task_id>", methods=["DELETE"])
 def delete_task(task_id):
-    connection = get_db_connection()
-
-    task = connection.execute(
-        "SELECT * FROM tasks WHERE id = ?",
-        (task_id,)
-    ).fetchone()
+    task = get_task_by_id(task_id)
 
     if task is None:
-        connection.close()
         return {"error": "Task not found"}, 404
 
-    connection.execute(
-        "DELETE FROM tasks WHERE id = ?",
-        (task_id,)
-    )
-
-    connection.commit()
-    connection.close()
+    delete_task(task_id)
 
     return {"message": "Task deleted"}
