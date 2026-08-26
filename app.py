@@ -2,25 +2,15 @@ from flask import Flask, request
 from database import get_db_connection
 from schemas import TaskCreate, TaskUpdate, TaskPatch
 from pydantic import ValidationError
+from routes.tasks import tasks_bp
+
 
 app = Flask(__name__)
-
 
 @app.route("/")
 def home():
     return {"message": "Task Manager API is running!"}
 
-
-@app.route("/tasks", methods=["GET"])
-def get_tasks():
-    connection = get_db_connection()
-
-    tasks = connection.execute(
-        "SELECT * FROM tasks"
-    ).fetchall()
-
-    connection.close()
-    return {"tasks": [dict(task) for task in tasks]}
 
 @app.route("/tasks/<int:task_id>", methods=["GET"])
 def get_task(task_id):
@@ -171,6 +161,8 @@ def delete_task(task_id):
     connection.close()
 
     return {"message": "Task deleted"}
+
+app.register_blueprint(tasks_bp)
 
 if __name__ == "__main__":
     app.run(debug=True)
