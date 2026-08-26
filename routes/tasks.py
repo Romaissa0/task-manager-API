@@ -2,18 +2,15 @@ from flask import Blueprint, request
 from database import get_db_connection
 from pydantic import ValidationError
 from schemas import TaskCreate, TaskUpdate, TaskPatch
+from services.task_service import get_all_tasks, get_task_by_id
+
 tasks_bp = Blueprint("tasks", __name__)
 
 @tasks_bp.route("/tasks", methods=["GET"])
 def get_tasks():
-    connection = get_db_connection()
+    tasks = get_all_tasks()
 
-    tasks = connection.execute(
-        "SELECT * FROM tasks"
-    ).fetchall()
-
-    connection.close()
-    return {"tasks": [dict(task) for task in tasks]}
+    return {"tasks": tasks}
 
 @tasks_bp.route("/tasks", methods=["POST"])
 def create_task():
@@ -47,14 +44,7 @@ def create_task():
 
 @tasks_bp.route("/tasks/<int:task_id>", methods=["GET"])
 def get_task(task_id):
-    connection = get_db_connection()
-
-    task = connection.execute(
-        "SELECT * FROM tasks WHERE id = ?",
-        (task_id,)
-    ).fetchone()
-
-    connection.close()
+    task = get_task_by_id(task_id)
 
     if task is None:
         return {"error": "Task not found"}, 404
