@@ -1,8 +1,13 @@
 from flask import Flask
+from dotenv import load_dotenv
+import os
+
 from routes.tasks import tasks_bp
 
+load_dotenv()
 
 app = Flask(__name__)
+app.register_blueprint(tasks_bp)
 
 @app.route("/")
 def home():
@@ -20,10 +25,9 @@ def not_found(_error):
         "error": "Resource not found"
     }, 404
 
-app.register_blueprint(tasks_bp)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=os.getenv("FLASK_DEBUG") == "True")
 
 
 
