@@ -3,11 +3,20 @@ from dotenv import load_dotenv
 import os
 
 from routes.tasks import tasks_bp
-
+from routes.auth import auth_bp
+from flask_jwt_extended import JWTManager
 load_dotenv()
 
 app = Flask(__name__)
+
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+jwt = JWTManager(app)
+
+
 app.register_blueprint(tasks_bp)
+app.register_blueprint(auth_bp)
+
+
 
 @app.route("/")
 def home():
