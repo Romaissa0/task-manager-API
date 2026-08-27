@@ -4,7 +4,7 @@ from pydantic import ValidationError
 from database import get_db_connection
 from schemas import UserRegister, UserLogin
 from services.auth_service import hash_password, verify_password
-
+from flask_jwt_extended import create_access_token
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -65,8 +65,10 @@ def login():
 
     if not verify_password(data.password, user["password_hash"]):
         return {"error": "Invalid email or password"}, 401
+    access_token = create_access_token(identity=user["id"])
 
     return {
         "message": "Login successful",
-        "user_id": user["id"]
+        "user_id": user["id"],
+        "access_token": access_token
     }, 200
