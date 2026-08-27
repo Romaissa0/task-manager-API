@@ -1,31 +1,32 @@
 from database import get_db_connection
 
 
-def get_all_tasks():
+def get_all_tasks(user_id):
     connection = get_db_connection()
 
     tasks = connection.execute(
-        "SELECT * FROM tasks"
+        "SELECT * FROM tasks WHERE user_id = ?",
+        (user_id,)
     ).fetchall()
 
     connection.close()
 
     return [dict(task) for task in tasks]
 
-def get_tasks():
-    tasks = get_all_tasks()
+def get_tasks(user_id):
+    tasks = get_all_tasks(user_id)
 
     return {"tasks": tasks}
 
 
 
 
-def get_task_by_id(task_id):
+def get_task_by_id(task_id, user_id):
     connection = get_db_connection()
 
     task = connection.execute(
-        "SELECT * FROM tasks WHERE id = ?",
-        (task_id,)
+        "SELECT * FROM tasks WHERE id = ? AND user_id = ?",
+        (task_id, user_id)
     ).fetchone()
 
     connection.close()
@@ -36,12 +37,12 @@ def get_task_by_id(task_id):
     return dict(task)
 
 
-def create_task(title, description):
+def create_task(user_id, title, description):
     connection = get_db_connection()
 
     cursor = connection.execute(
-        "INSERT INTO tasks (title, description) VALUES (?, ?)",
-        (title, description)
+        "INSERT INTO tasks (user_id, title, description) VALUES (?, ?, ?)",
+        (user_id, title, description)
     )
 
     connection.commit()
@@ -53,7 +54,7 @@ def create_task(title, description):
     return task_id
 
 
-def update_task(task_id, title, description, completed):
+def update_task(task_id, title, description, completed, user_id):
     connection = get_db_connection()
 
     connection.execute(
