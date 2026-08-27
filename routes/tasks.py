@@ -2,16 +2,19 @@ from flask import Blueprint, request
 from pydantic import ValidationError
 from schemas import TaskCreate, TaskUpdate, TaskPatch
 from services.task_service import get_all_tasks, get_task_by_id , create_task, update_task, patch_task, delete_task
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 tasks_bp = Blueprint("tasks", __name__)
 
 @tasks_bp.route("/tasks", methods=["GET"])
+@jwt_required()
 def get_tasks():
     tasks = get_all_tasks()
 
     return {"tasks": tasks}
 
 @tasks_bp.route("/tasks", methods=["POST"])
+@jwt_required()
 def create_task_route():
     data = request.get_json()
 
@@ -33,6 +36,7 @@ def create_task_route():
     }, 201
 
 @tasks_bp.route("/tasks/<int:task_id>", methods=["GET"])
+@jwt_required()
 def get_task(task_id):
     task = get_task_by_id(task_id)
 
@@ -43,6 +47,7 @@ def get_task(task_id):
 
 
 @tasks_bp.route("/tasks/<int:task_id>", methods=["PUT"])
+@jwt_required()
 def update_task_route(task_id):
     data = request.get_json()
     try:
@@ -66,6 +71,7 @@ def update_task_route(task_id):
 
 
 @tasks_bp.route("/tasks/<int:task_id>", methods=["PATCH"])
+@jwt_required()
 def patch_task_route(task_id):
     data = request.get_json()
 
@@ -92,6 +98,7 @@ def patch_task_route(task_id):
 
 
 @tasks_bp.route("/tasks/<int:task_id>", methods=["DELETE"])
+@jwt_required()
 def delete_task(task_id):
     task = get_task_by_id(task_id)
 

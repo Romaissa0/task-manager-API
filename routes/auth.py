@@ -65,7 +65,7 @@ def login():
 
     if not verify_password(data.password, user["password_hash"]):
         return {"error": "Invalid email or password"}, 401
-    access_token = create_access_token(identity=user["id"])
+    access_token = create_access_token(identity=str(user["id"]))
 
     return {
         "message": "Login successful",
