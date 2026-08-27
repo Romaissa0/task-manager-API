@@ -10,9 +10,11 @@ connection = get_db_connection()
 connection.execute("""
     CREATE TABLE IF NOT EXISTS tasks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         title TEXT NOT NULL,
         description TEXT,
-        completed BOOLEAN NOT NULL DEFAULT 0
+        completed BOOLEAN NOT NULL DEFAULT 0,
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )
 """)
 

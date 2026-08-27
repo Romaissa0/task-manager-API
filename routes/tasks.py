@@ -99,7 +99,7 @@ def patch_task_route(task_id):
 
 @tasks_bp.route("/tasks/<int:task_id>", methods=["DELETE"])
 @jwt_required()
-def delete_task(task_id):
+def delete_task_route(task_id):
     task = get_task_by_id(task_id)
 
     if task is None:
