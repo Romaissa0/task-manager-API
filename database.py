@@ -1,8 +1,9 @@
 import sqlite3
-
+import os
 
 def get_db_connection():
-    connection = sqlite3.connect("tasks.db")
+    DATABASE = os.getenv("DATABASE_PATH", "tasks.db")
+    connection = sqlite3.connect(DATABASE)
     connection.row_factory = sqlite3.Row
     return connection
 connection = get_db_connection()

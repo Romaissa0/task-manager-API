@@ -4,6 +4,7 @@ import os
 
 from routes.tasks import tasks_bp
 from routes.auth import auth_bp
+
 from flask_jwt_extended import JWTManager
 load_dotenv()
 
