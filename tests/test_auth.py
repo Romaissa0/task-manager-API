@@ -1,3 +1,24 @@
+def get_auth_token(client):
+    client.post(
+        "/auth/register",
+        json={
+            "email": "test@example.com",
+            "password": "password123"
+        }
+    )
+
+    response = client.post(
+        "/auth/login",
+        json={
+            "email": "test@example.com",
+            "password": "password123"
+        }
+    )
+
+    return response.get_json()["access_token"]
+
+
+
 def test_register(client):
     response = client.post(
         "/auth/register",
@@ -91,3 +112,94 @@ def test_get_tasks_without_token(client):
     assert response.status_code == 401
 
    
+def test_create_task(client):
+    token = get_auth_token(client)
+
+    response = client.post(
+        "/tasks",
+        json={
+            "title": "Study Complex Analysis",
+            "description": "Review the fundamental theorems"
+        },
+        headers={
+            "Authorization": f"Bearer {token}"
+        }
+    )
+
+    assert response.status_code == 201
+
+    data = response.get_json()
+
+    assert data["message"] == "Task created"
+    assert "task_id" in data
+
+
+
+def test_get_tasks(client):
+    token = get_auth_token(client)
+
+    # Create a task first
+    client.post(
+        "/tasks",
+        json={
+            "title": "Study Complex Analysis",
+            "description": "Review MMP and Liouville"
+        },
+        headers={
+            "Authorization": f"Bearer {token}"
+        }
+    )
+
+    # Get all tasks
+    response = client.get(
+        "/tasks",
+        headers={
+            "Authorization": f"Bearer {token}"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.get_json()
+
+    assert "tasks" in data
+    assert len(data["tasks"]) == 1
+    assert data["tasks"][0]["title"] == "Study Complex Analysis"
+
+def test_get_task(client):
+    token = get_auth_token(client)
+
+    # Create a task
+    response = client.post(
+        "/tasks",
+        json={
+            "title": "Study Complex Analysis",
+            "description": "Review MMP and Liouville"
+        },
+        headers={
+            "Authorization": f"Bearer {token}"
+        }
+    )
+
+    assert response.status_code == 201
+
+    task_id = response.get_json()["task_id"]
+
+    # Get the task
+    response = client.get(
+        f"/tasks/{task_id}",
+        headers={
+            "Authorization": f"Bearer {token}"
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.get_json()
+
+    assert "task" in data
+    assert data["task"]["id"] == task_id
+    assert data["task"]["title"] == "Study Complex Analysis"
+    assert data["task"]["description"] == "Review MMP and Liouville"
+
+
