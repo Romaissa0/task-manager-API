@@ -53,7 +53,6 @@ def create_task(user_id, title, description):
 
     return task_id
 
-
 def update_task(task_id, title, description, completed, user_id):
     connection = get_db_connection()
 
@@ -61,9 +60,9 @@ def update_task(task_id, title, description, completed, user_id):
         """
         UPDATE tasks
         SET title = ?, description = ?, completed = ?
-        WHERE id = ?
+        WHERE id = ? AND user_id = ?
         """,
-        (title, description, completed, task_id)
+        (title, description, completed, task_id, user_id)
     )
 
     connection.commit()

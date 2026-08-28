@@ -86,11 +86,11 @@ def update_task_route(task_id):
         return {"error": "Task not found"}, 404
 
     update_task(
-        user_id,
         task_id,
         task_update.title,
         task_update.description,
-        task_update.completed
+        task_update.completed,
+        user_id
     )
 
     return {
