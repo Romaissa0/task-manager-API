@@ -1,9 +1,8 @@
 import os
 
-# Tell the application to use a test database
 os.environ["DATABASE_PATH"] = "test_tasks.db"
 os.environ["FLASK_DEBUG"] = "False"
-os.environ["JWT_SECRET_KEY"] = "test-secret-key"
+os.environ["JWT_SECRET_KEY"] = "test-secret-key-that-is-at-least-32-bytes-long"
 
 import pytest
 from app import app
@@ -18,12 +17,13 @@ def client():
         yield client
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def test_db():
     connection = get_db_connection()
 
-    # Start each test with an empty tasks table
+    # Start each test with empty tables
     connection.execute("DELETE FROM tasks")
+    connection.execute("DELETE FROM users")
     connection.commit()
 
     yield connection

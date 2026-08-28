@@ -1,12 +1,27 @@
 import sqlite3
 import os
 
+
 def get_db_connection():
     DATABASE = os.getenv("DATABASE_PATH", "tasks.db")
+
     connection = sqlite3.connect(DATABASE)
     connection.row_factory = sqlite3.Row
+
     return connection
+
+
 connection = get_db_connection()
+
+
+connection.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL
+    )
+""")
+
 
 connection.execute("""
     CREATE TABLE IF NOT EXISTS tasks (
@@ -16,18 +31,6 @@ connection.execute("""
         description TEXT,
         completed BOOLEAN NOT NULL DEFAULT 0,
         FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-""")
-
-connection.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-        email TEXT NOT NULL UNIQUE,
-
-        password_hash TEXT NOT NULL
-
     )
 """)
 
