@@ -489,55 +489,6 @@ def test_user_cannot_update_other_users_task(client):
 
     assert response.status_code == 404
 
-def test_user_cannot_update_other_users_task(client):
-    token_a = get_auth_token(client)
-
-    response = client.post(
-        "/tasks",
-        json={
-            "title": "User A task",
-            "description": "Private"
-        },
-        headers={
-            "Authorization": f"Bearer {token_a}"
-        }
-    )
-
-    task_id = response.get_json()["task_id"]
-
-    # Register User B
-    client.post(
-        "/auth/register",
-        json={
-            "email": "userb@example.com",
-            "password": "password123"
-        }
-    )
-
-    response = client.post(
-        "/auth/login",
-        json={
-            "email": "userb@example.com",
-            "password": "password123"
-        }
-    )
-
-    token_b = response.get_json()["access_token"]
-
-    # User B tries to update User A's task
-    response = client.put(
-        f"/tasks/{task_id}",
-        json={
-            "title": "HACKED",
-            "description": "Changed",
-            "completed": True
-        },
-        headers={
-            "Authorization": f"Bearer {token_b}"
-        }
-    )
-
-    assert response.status_code == 404
 
 def test_user_cannot_delete_other_users_task(client):
     token_a = get_auth_token(client)
@@ -584,3 +535,16 @@ def test_user_cannot_delete_other_users_task(client):
 
     assert response.status_code == 404
 
+def test_create_task_invalid_json(client):
+    token = get_auth_token(client)
+
+    response = client.post(
+        "/tasks",
+        data='{"title": "Test"',
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+    )
+
+    assert response.status_code == 400
