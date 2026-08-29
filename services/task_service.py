@@ -72,12 +72,12 @@ def update_task(task_id, title, description, completed, user_id):
         "message": "Task updated"
     }
 
-def delete_task(task_id):
+def delete_task(task_id, user_id):
     connection = get_db_connection()
 
     connection.execute(
-        "DELETE FROM tasks WHERE id = ?",
-        (task_id,)
+        "DELETE FROM tasks WHERE id = ? AND user_id = ?",
+        (task_id, user_id)
     )
 
     connection.commit()
@@ -87,12 +87,12 @@ def delete_task(task_id):
         "message": "Task deleted"
     }
 
-def patch_task(task_id, updates):  
+def patch_task(user_id,task_id, updates):  
     connection = get_db_connection()
 
     task = connection.execute(
-        "SELECT * FROM tasks WHERE id = ?",
-        (task_id,)
+        "SELECT * FROM tasks WHERE id = ? AND user_id = ?",
+        (task_id, user_id)
     ).fetchone()
 
     if task is None:
@@ -101,8 +101,8 @@ def patch_task(task_id, updates):
 
     for field, value in updates.items():
         connection.execute(
-            f"UPDATE tasks SET {field} = ? WHERE id = ?",
-            (value, task_id)
+            f"UPDATE tasks SET {field} = ? WHERE id = ? AND user_id = ?",
+            (value, task_id, user_id)
         )
 
     connection.commit()
