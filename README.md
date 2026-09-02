@@ -6,6 +6,9 @@ The project demonstrates backend development fundamentals including REST APIs,
 CRUD operations, SQLite database integration, input validation, JWT-based
 authentication, user ownership, error handling, and automated testing.
 
+**Live API:** task-manager-api-fmom.onrender.com  
+**Tests:** 18 passed
+
 ## Features
 
 - User registration and login
